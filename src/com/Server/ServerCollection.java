@@ -1,5 +1,6 @@
 package com.Server;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 //和客户端保持连接线程的集合
@@ -13,5 +14,17 @@ public class ServerCollection {
     }
     public static void removeServer(String userName) {//移除客户端的信息
         servers.remove(userName);
+    }
+
+    public static String[] getOnLineFriend() {
+        String[] onLineFriend = new String[servers.size()];
+        int i = 0;
+        for (String s : servers.keySet()) {
+            onLineFriend[i] = s;
+            i++;
+
+        }
+        System.out.println("在线好友列表：" + Arrays.toString(onLineFriend));
+        return onLineFriend;
     }
 }

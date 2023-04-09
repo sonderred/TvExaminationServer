@@ -17,15 +17,18 @@ public class ServerService {
         serverService.serverService();
     }
     private ServerSocket serverSocket;
-    private final HashMap<String, UserInformation> ServerCollection;
+    private final HashMap<String, UserInformation> serverCollection;
 
     public ServerService() {
-        ServerCollection = new HashMap<>();
-        ServerCollection.put("bili", new UserInformation("bili", "123456"));
+        serverCollection = new HashMap<>();
+        serverCollection.put("bili", new UserInformation("bili", "bili"));
+        serverCollection.put("123", new UserInformation("bili", "123"));
+        serverCollection.put("456", new UserInformation("bili", "456"));
+        serverCollection.put("789", new UserInformation("bili", "789"));
     }
 
     public boolean checkUser(String userName, String password) {
-        UserInformation userInformation = ServerCollection.get(userName);
+        UserInformation userInformation = serverCollection.get(userName);
         return userInformation != null && userInformation.getPassword() != null &&
                 userInformation.getPassword().equals(password);
     }
@@ -42,13 +45,15 @@ public class ServerService {
                 UserInformation object = (UserInformation) objectInputStream.readObject();
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 Message message = new Message();
+                System.out.print("用户名："+object.getUserName()+"密码："+object.getPassword()+" ");
                 if (checkUser(object.getUserName(), object.getPassword())) {
                     System.out.println("登录成功");
                     message.setMessageType(MessageType.message_succeed);
                     objectOutputStream.writeObject(message);
                     ServerConnent serverConnent = new ServerConnent(object.getUserName(), socket);
                     serverConnent.start();
-                    // 加入集合
+                    // 将线程加入集合
+                    ServerCollection.addServer(object.getUserName(), serverConnent);
                 } else {
                     System.out.println("登录失败");
                     message.setMessageType(MessageType.message_login_fail);

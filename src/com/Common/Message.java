@@ -8,6 +8,7 @@ import java.io.Serializable;
     private String sender;
     private String receiver;
     private String content;//消息内容
+    private String[] userlist;
     private String messageType;//定义消息类型
     private String sendTime;//发送时间
 
@@ -50,5 +51,13 @@ import java.io.Serializable;
     public String getMessageType() {
         return messageType;
     }
-}
 
+
+    public void setUserlist(String[] userlist) {
+        this.userlist = userlist;
+    }
+
+    public String[] getUserlist() {
+        return userlist;
+    }
+}
