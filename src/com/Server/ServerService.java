@@ -17,16 +17,40 @@ public class ServerService {
         serverService.serverService();
     }
     private ServerSocket serverSocket;
-    private final HashMap<String, UserInformation> serverCollection;
+    private static HashMap<String, UserInformation> serverCollection;
 
     public ServerService() {
         serverCollection = new HashMap<>();
-        serverCollection.put("bili", new UserInformation("bili", "bili"));
-        serverCollection.put("123", new UserInformation("bili", "123"));
-        serverCollection.put("456", new UserInformation("bili", "456"));
-        serverCollection.put("789", new UserInformation("bili", "789"));
+        serverCollection.put("bili", new UserInformation("bili", "bili","kunkun","Beijing"));
+        serverCollection.put("123", new UserInformation("123", "123","ikun","guangzhou"));
+        serverCollection.put("456", new UserInformation("456", "456","dog","japan"));
+        serverCollection.put("789", new UserInformation("789", "789","dinzhen","litang"));
     }
 
+    public static UserInformation modifyUserInformation(String sender, String newUserName, String newPassword) {
+        //修改用户信息
+        UserInformation userInformation = serverCollection.get(sender);
+        userInformation.setUserName(newUserName);
+        userInformation.setPassword(newPassword);
+        userInformation.setRealName(serverCollection.get(sender).getRealName());
+        userInformation.setBirthPlace(serverCollection.get(sender).getBirthPlace());
+        serverCollection.put(newUserName, userInformation);
+        serverCollection.remove(sender);
+        return userInformation;
+    }
+
+    public void register(String userName, String password) {
+        UserInformation userInformation = new UserInformation(userName, password, null, null);
+        serverCollection.put(userName, userInformation);
+    }
+    //获得用户信息
+    public static UserInformation getUserInformation(String userName) {
+        return serverCollection.get(userName);
+    }
+    // 检查用户是否存在
+    public boolean logincheckUser(String userName) {
+        return serverCollection.containsKey(userName);
+    }
     public boolean checkUser(String userName, String password) {
         UserInformation userInformation = serverCollection.get(userName);
         return userInformation != null && userInformation.getPassword() != null &&
@@ -46,7 +70,7 @@ public class ServerService {
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 Message message = new Message();
                 System.out.print("用户名："+object.getUserName()+"密码："+object.getPassword()+" ");
-                if (checkUser(object.getUserName(), object.getPassword())) {
+                if (checkUser(object.getUserName(), object.getPassword())||(logincheckUser(object.getUserName())&&object.getPassword().equals(serverCollection.get(object.getUserName()).getPassword()))) {
                     System.out.println("登录成功");
                     message.setMessageType(MessageType.message_succeed);
                     objectOutputStream.writeObject(message);
@@ -54,6 +78,21 @@ public class ServerService {
                     serverConnent.start();
                     // 将线程加入集合
                     ServerCollection.addServer(object.getUserName(), serverConnent);
+                }
+
+                //注册账号
+                else if (!logincheckUser(object.getUserName())) {
+                    if (!logincheckUser(object.getUserName())) {
+                        System.out.println("注册成功");
+                        message.setMessageType(MessageType.message_register_succeed);
+                        objectOutputStream.writeObject(message);
+                        serverCollection.put(object.getUserName(), object);
+                    } else {
+                        System.out.println("注册失败");
+                        message.setMessageType(MessageType.message_login_fail);
+                        objectOutputStream.writeObject(message);
+                        socket.close(); // 关闭连接
+                    }
                 } else {
                     System.out.println("登录失败");
                     message.setMessageType(MessageType.message_login_fail);
